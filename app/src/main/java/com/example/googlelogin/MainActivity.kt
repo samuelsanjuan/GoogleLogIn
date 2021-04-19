@@ -4,7 +4,9 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.MutableLiveData
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
@@ -35,15 +37,27 @@ class MainActivity : AppCompatActivity() {
 
         val loginButon: Button=findViewById(R.id.googleloginbtn)
         loginButon.setOnClickListener {
-            println(A+"pulsado boton sing in")
+            println(A+"pulsado boton sign in")
             signIn()
+        }
+
+        val signOutButon: Button=findViewById(R.id.googlesignoutbtn)
+        signOutButon.setOnClickListener {
+            println(A+"pulsado boton sign out")
+            signOut()
         }
     }
 
     private fun signIn() {
         val signInIntent = mGoogleSignInClient.signInIntent
         startActivityForResult(signInIntent, RC_SIGN_IN)
-        println(A+"sing in")
+        println(A+"sign in")
+    }
+
+    private fun signOut() {
+        mGoogleSignInClient.signOut()
+                .addOnCompleteListener(this) {
+                }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -56,10 +70,24 @@ class MainActivity : AppCompatActivity() {
         println(A+"onActivityResult")
     }
 
+    private fun ComprobarDatosRest(correo:String){
+
+        //aun no esta implementado
+
+        if (correo=="sansamuelandres@gmail.com") {
+            Toast.makeText(applicationContext, "Correo Valido", Toast.LENGTH_LONG).show()
+        }else{
+            Toast.makeText(applicationContext,"Correo No Valido",Toast.LENGTH_LONG).show()
+            signOut()
+        }
+    }
+
+
+
     private fun handleSignInResult(completedTask: Task<GoogleSignInAccount>) {
         try {
 
-            println(A+"handleSingInResult")
+            println(A+"handleSignInResult")
             val account = completedTask.getResult(
                     ApiException::class.java
             )
@@ -67,27 +95,24 @@ class MainActivity : AppCompatActivity() {
             // Signed in successfully
             val googleId = account?.id ?: ""
             Log.i("Google ID",googleId)
-            println(A+"Google Id :"+googleId)
 
             val googleFirstName = account?.givenName ?: ""
             Log.i("Google First Name", googleFirstName)
-            println(A+"Google First Name:"+ googleFirstName)
 
             val googleLastName = account?.familyName ?: ""
             Log.i("Google Last Name", googleLastName)
-            println(A+"Google Last Name:"+ googleLastName)
 
             val googleEmail = account?.email ?: ""
             Log.i("Google Email", googleEmail)
-            println(A+"Google Email:"+ googleEmail)
+
+            ComprobarDatosRest(googleEmail)
+
 
             val googleProfilePicURL = account?.photoUrl.toString()
             Log.i("Google Profile Pic URL", googleProfilePicURL)
-            println(A+"Google Profile Pic URL:"+ googleProfilePicURL)
 
             val googleIdToken = account?.idToken ?: ""
             Log.i("Google ID Token", googleIdToken)
-            println(A+"Google ID Token:"+ googleIdToken)
 
         } catch (e: ApiException) {
             // Sign in was unsuccessful
