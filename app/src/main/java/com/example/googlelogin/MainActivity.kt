@@ -13,37 +13,35 @@ import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.tasks.Task
+import org.jetbrains.anko.doAsync
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
 
 class MainActivity : AppCompatActivity() {
     lateinit var mGoogleSignInClient: GoogleSignInClient
     private val RC_SIGN_IN = 9001
-    val A ="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        println(A+"on create")
 
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestIdToken("470320870749-l0ct9p1dsvgk1hms2r7vfa42b9r4guuq.apps.googleusercontent.com")
                 .requestEmail()
                 .build()
 
-        println(A+"build")
 
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso)
 
         val loginButon: Button=findViewById(R.id.googleloginbtn)
         loginButon.setOnClickListener {
-            println(A+"pulsado boton sign in")
             signIn()
         }
 
         val signOutButon: Button=findViewById(R.id.googlesignoutbtn)
         signOutButon.setOnClickListener {
-            println(A+"pulsado boton sign out")
             signOut()
         }
     }
@@ -51,7 +49,6 @@ class MainActivity : AppCompatActivity() {
     private fun signIn() {
         val signInIntent = mGoogleSignInClient.signInIntent
         startActivityForResult(signInIntent, RC_SIGN_IN)
-        println(A+"sign in")
     }
 
     private fun signOut() {
@@ -67,7 +64,13 @@ class MainActivity : AppCompatActivity() {
                     GoogleSignIn.getSignedInAccountFromIntent(data)
             handleSignInResult(task)
         }
-        println(A+"onActivityResult")
+    }
+
+    fun getRetrofit(): Retrofit {
+        return Retrofit.Builder()
+                .baseUrl("https://serviciosapps.grupomaviva.es/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build()
     }
 
     private fun ComprobarDatosRest(correo:String){
@@ -86,12 +89,9 @@ class MainActivity : AppCompatActivity() {
 
     private fun handleSignInResult(completedTask: Task<GoogleSignInAccount>) {
         try {
-
-            println(A+"handleSignInResult")
             val account = completedTask.getResult(
                     ApiException::class.java
             )
-            println(A+"Account:"+account)
             // Signed in successfully
             val googleId = account?.id ?: ""
             Log.i("Google ID",googleId)
@@ -117,7 +117,18 @@ class MainActivity : AppCompatActivity() {
         } catch (e: ApiException) {
             // Sign in was unsuccessful
             Log.e("failed code=", e.statusCode.toString())
-            println(A+"Sign in was unsuccessful "+e.toString())
+        }
+    }
+
+    private fun validarCorreoAsic(gmail: String) {
+        doAsync {
+            var gmail = gmail
+            var app = "appEntregasPsa"
+            var version = "1.0.0"
+            getRetrofit().create(WebService::class.java)
+                    .getDispositivo("https://serviciosapps.grupomaviva.es/dispositivo.php?id_cuenta_ok=" + gmail + app + version)
+                    .execute()
+                    .body()
         }
     }
 }
