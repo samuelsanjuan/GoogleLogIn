@@ -63,6 +63,7 @@ class MainActivity : AppCompatActivity() {
             val task =
                     GoogleSignIn.getSignedInAccountFromIntent(data)
             handleSignInResult(task)
+
         }
     }
 
@@ -72,20 +73,6 @@ class MainActivity : AppCompatActivity() {
                 .addConverterFactory(GsonConverterFactory.create())
                 .build()
     }
-
-    private fun ComprobarDatosRest(correo:String){
-
-        //aun no esta implementado
-
-        if (correo=="sansamuelandres@gmail.com") {
-            Toast.makeText(applicationContext, "Correo Valido", Toast.LENGTH_LONG).show()
-        }else{
-            Toast.makeText(applicationContext,"Correo No Valido",Toast.LENGTH_LONG).show()
-            signOut()
-        }
-    }
-
-
 
     private fun handleSignInResult(completedTask: Task<GoogleSignInAccount>) {
         try {
@@ -105,14 +92,15 @@ class MainActivity : AppCompatActivity() {
             val googleEmail = account?.email ?: ""
             Log.i("Google Email", googleEmail)
 
-            ComprobarDatosRest(googleEmail)
-
 
             val googleProfilePicURL = account?.photoUrl.toString()
             Log.i("Google Profile Pic URL", googleProfilePicURL)
 
             val googleIdToken = account?.idToken ?: ""
             Log.i("Google ID Token", googleIdToken)
+            println("empezando validacion")
+
+            validarCorreoAsic(googleEmail)
 
         } catch (e: ApiException) {
             // Sign in was unsuccessful
@@ -121,14 +109,22 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun validarCorreoAsic(gmail: String) {
+        println("validando correo "+gmail)
         doAsync {
+
             var gmail = gmail
             var app = "appEntregasPsa"
             var version = "1.0.0"
-            getRetrofit().create(WebService::class.java)
-                    .getDispositivo("https://serviciosapps.grupomaviva.es/dispositivo.php?id_cuenta_ok=" + gmail + app + version)
+
+            println("datos validacion puestos")
+
+            val datos=getRetrofit().create(WebService::class.java)
+                    .getDispositivo("https://serviciosapps.grupomaviva.es/dispositivo.php?id_cuenta_ok=" + gmail +"&app_ok="+ app +"&version_ok="+ version)
                     .execute()
                     .body()
+            println(datos.toString())
+           // Toast.makeText(applicationContext,datos,Toast.LENGTH_SHORT).show()
+            println("finalizando validacion")
         }
     }
 }
