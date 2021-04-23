@@ -17,12 +17,16 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 object ViewModel {
 
+    val textViewEnabled= MutableLiveData<Boolean>()
+    val signInEnabled= MutableLiveData<Boolean>()
+    val signOutEnabled= MutableLiveData<Boolean>()
+    val textoTextView= MutableLiveData<String>()
+    val textViewGmail= MutableLiveData<String>()
+
     val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
         .requestIdToken("470320870749-l0ct9p1dsvgk1hms2r7vfa42b9r4guuq.apps.googleusercontent.com")
         .requestEmail()
         .build()
-
-    val textoToast= MutableLiveData<String>()
 
     fun getRetrofit(): Retrofit {
     val retrofit= Retrofit.Builder()
@@ -63,10 +67,16 @@ object ViewModel {
 
     fun toastBooleanValidacion(boolean: Boolean,clienteGoogle:GoogleSignInClient){
         if (boolean==true){
-            textoToast.value="Correo Valido"
+            textViewEnabled.value=true
+            textoTextView.value="\t           Correo Valido"
+            signInEnabled.value=false
+            signOutEnabled.value=true
         }else{
             clienteGoogle.signOut()
-            textoToast.value="Correo Invalido"
+            textViewEnabled.value=true
+            signInEnabled.value=true
+            signOutEnabled.value=false
+            textoTextView.value="\t          Correo Invalido\nAvisa al departamento de it \n     para que te den de alta"
         }
     }
 
@@ -88,14 +98,20 @@ object ViewModel {
 
                     if (respuesta=="[\"OK\"]"){
                         toastBooleanValidacion(true,clienteGoogle)
+                        textViewGmail.value=gmail
                     }else {
+                        textViewGmail.value=""
                         toastBooleanValidacion(false,clienteGoogle)
                     }
                 }
 
                 override fun onFailure(responde: Call<ResponseBody>, t: Throwable) {
                     clienteGoogle.signOut()
-                    textoToast.value="ERROR"
+                    signOutEnabled.value=false
+                    signInEnabled.value=true
+                    textViewEnabled.value=true
+                    textViewGmail.value=""
+                    textoTextView.value="\t                 ERROR"
                 }
             }
             )

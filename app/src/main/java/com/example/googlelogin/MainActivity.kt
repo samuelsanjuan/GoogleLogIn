@@ -3,7 +3,7 @@ package com.example.googlelogin
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
-import android.widget.Toast
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -18,17 +18,39 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        val textView:TextView=findViewById(R.id.textView)
+        val textGmail:TextView=findViewById(R.id.textViewGmail)
         val signOutButon: Button=findViewById(R.id.googlesignoutbtn)
-        val loginButon: Button=findViewById(R.id.googleloginbtn)
+        val signInButon: Button=findViewById(R.id.googleloginbtn)
 
-        loginButon.setOnClickListener {signIn()}
-        signOutButon.setOnClickListener {signOut()}
+        findViewById<Button>(R.id.mainPageButton).setOnClickListener{
 
-        ViewModel.textoToast.observe(this, Observer { textoToast-> val mensaje=textoToast
-            Toast.makeText(applicationContext,mensaje,Toast.LENGTH_SHORT).show()})
+        val intent = Intent(this,PaginaPrincipal::class.java)
+            startActivity(intent)
+
+        }
+
+        ViewModel.textViewGmail.observe(this, Observer { textViewGmail -> textGmail.text=textViewGmail  })
+        ViewModel.textoTextView.observe(this, Observer { textoTextView -> textView.text=textoTextView  })
+        ViewModel.signInEnabled.observe(this, Observer { signInEnabled -> signInButon.isEnabled=signInEnabled })
+        ViewModel.signOutEnabled.observe(this, Observer { signOutEnabled -> signOutButon.isEnabled=signOutEnabled })
+        ViewModel.textViewEnabled.observe(this, Observer { textViewEnabled -> textView.isEnabled=textViewEnabled })
+
+        signInButon.setOnClickListener {
+            signIn()
+        }
+
+        signOutButon.setOnClickListener {
+            signOut()
+            textGmail.text=""
+            signInButon.isEnabled=true
+            textView.text=""
+            signOutButon.isEnabled=false
+        }
 
         mGoogleSignInClient = GoogleSignIn.getClient(this, ViewModel.gso)
     }
+
 
     private fun signIn() {
         val signInIntent = mGoogleSignInClient.signInIntent
